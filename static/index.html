@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeGuessr</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --primary-hover: #45a049;
+            --secondary-color: #2196F3;
+            --secondary-hover: #1976D2;
+            --gradient-start: #1a2a6c;
+            --gradient-middle: #b21f1f;
+            --gradient-end: #fdbb2d;
+            --card-background: rgba(255, 255, 255, 0.95);
+            --text-color: #333333;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end));
+            background-attachment: fixed;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            padding-bottom: 60px; /* Space for footer */
+        }
+
+        #joinSection {
+            background: var(--card-background);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            margin: 100px auto;
+            max-width: 400px;
+            backdrop-filter: blur(10px);
+        }
+
+        .game-container {
+            background: var(--card-background);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .game-title {
+            text-align: center;
+            color: var(--gradient-start);
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .status-text {
+            text-align: center;
+            font-size: 1.2em;
+            color: var(--text-color);
+            background: var(--card-background);
+            padding: 12px 25px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            margin: 20px auto;
+            max-width: fit-content;
+        }
+
+        .image-container {
+            background: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            max-height: 400px;
+            height: auto;
+            border-radius: 8px;
+            object-fit: contain;
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .scoreboard {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scoreboard::before {
+            content: '🏆';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            font-size: 40px;
+            opacity: 0.1;
+            transform: rotate(15deg);
+        }
+
+        .scoreboard h3 {
+            color: var(--gradient-start);
+            text-align: center;
+            font-size: 1.8em;
+            margin: 0 0 20px 0;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .score-entry {
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .score-entry:hover {
+            transform: translateX(5px);
+            background-color: #f8f8f8;
+        }
+
+        .player-name {
+            font-weight: 500;
+            color: var(--text-color);
+            flex: 1;
+        }
+
+        .player-score {
+            font-weight: bold;
+            color: var(--gradient-middle);
+            font-size: 1.2em;
+            padding: 5px 10px;
+            background: #f8f8f8;
+            border-radius: 20px;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .remove-button {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            margin-left: 10px;
+            font-size: 18px;
+            color: #ff4444;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .score-entry:hover .remove-button {
+            opacity: 1;
+        }
+
+        .guess-form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .input-field {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: var(--secondary-color);
+        }
+
+        .button {
+            padding: 12px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .primary-button {
+            background: linear-gradient(45deg, var(--primary-color), var(--primary-hover));
+        }
+
+        .primary-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .next-button {
+            background: linear-gradient(45deg, var(--secondary-color), var(--secondary-hover));
+        }
+
+        .next-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+        }
+
+        .footer {
+            background: var(--card-background);
+            padding: 15px;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            font-size: 0.9em;
+            color: var(--text-color);
+        }
+
+        .footer a {
+            color: var(--gradient-middle);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .guess-form {
+                flex-direction: column;
+            }
+            
+            .input-field,
+            .button {
+                width: 100%;
+                max-width: 200px;
+            }
+            
+            .game-title {
+                font-size: 2em;
+            }
+
+            .status-text {
+                font-size: 1.1em;
+                padding: 10px 20px;
+                margin: 15px auto;
+            }
+            
+            .image-container {
+                min-height: 200px;
+                padding: 15px;
+            }
+            
+            .image-container img {
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>TimeGuessr</h1>
+    
+    <!-- <div id="resetSection">
+        <button onclick="resetGame()">Reset Game</button>
+    </div> -->
+
+    <!-- Join Game Section -->
+    <div id="joinSection">
+        <h2>Join Game</h2>
+        <div class="join-form">
+            <input type="text" id="playerName" placeholder="Enter your name" class="input-field">
+            <button onclick="joinGame()" class="button primary-button">Join</button>
+        </div>
+    </div>
+
+    <!-- Game Section (initially hidden) -->
+    <div id="gameSection" class="hidden game-container">
+        <h2 class="game-title">Guess the Year!</h2>
+        
+        <div id="imageLoadingStatus" class="status-text">Waiting for game to start...</div>
+        
+        <div class="image-container">
+            <img id="gameImage" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" 
+                 alt="Historical image">
+        </div>
+        
+        <div class="guess-form">
+            <input type="number" id="yearGuess" placeholder="Enter year (e.g., 1950)" class="input-field">
+            <button id="guessButton" class="button primary-button">Submit Guess</button>
+        </div>
+
+        <div id="scores" class="scores-container">
+            <div id="scoresList"></div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        made w/ ❤️ in sf🌁 w/ <a href="https://workers.cloudflare.com" target="_blank">cf workers</a> ➡️👩🏻‍💻: <a href="https://github.com/elizabethsiegle/timeguessr-worker" target="_blank">view on github</a>
+    </footer>
+
+    <script src="frontend.js"></script>
+    <script>
+        // Add game object with proper player ID handling
+        const game = {
+            baseUrl: '',
+            sessionId: '',
+            currentPlayerId: null,
+
+            async joinGame(playerName) {
+                try {
+                    const playerId = 'player_' + Date.now();
+                    const response = await fetch(`${this.baseUrl}/join`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ playerId, playerName })
+                    });
+
+                    if (!response.ok) {
+                        const data = await response.json();
+                        throw new Error(data.error || 'Failed to join game');
+                    }
+
+                    this.currentPlayerId = playerId;
+                    return await response.json();
+                } catch (error) {
+                    throw new Error('Failed to join game: ' + error.message);
+                }
+            },
+
+            async makeGuess(year) {
+                try {
+                    if (!this.currentPlayerId) {
+                        throw new Error('No player ID found. Please rejoin the game.');
+                    }
+
+                    const response = await fetch(`${this.baseUrl}/guess`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            playerId: this.currentPlayerId,
+                            year: year 
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const data = await response.json();
+                        throw new Error(data.error || 'Failed to submit guess');
+                    }
+
+                    return await response.json();
+                } catch (error) {
+                    throw new Error('Failed to submit guess: ' + error.message);
+                }
+            },
+
+            async getGameStatus() {
+                try {
+                    const response = await fetch(`${this.baseUrl}/status`);
+                    if (!response.ok) {
+                        throw new Error('Failed to get game status');
+                    }
+                    return await response.json();
+                } catch (error) {
+                    throw new Error('Failed to get game status: ' + error.message);
+                }
+            }
+        };
+
+        // Define UI elements at the global scope
+        let imgElement;
+        let loadingStatus;
+        let guessButton;
+        let yearGuessInput;
+        let scoresListElement;
+        let nextButton;
+
+        // Add touch handling variables
+        let touchStartX = 0;
+        let touchEndX = 0;
+        let currentSwipeElement = null;
+
+        // Initialize UI elements and event listeners after DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize UI elements
+            imgElement = document.getElementById('gameImage');
+            loadingStatus = document.getElementById('imageLoadingStatus');
+            guessButton = document.getElementById('guessButton');
+            yearGuessInput = document.getElementById('yearGuess');
+            scoresListElement = document.getElementById('scoresList');
+            
+            // Create next button
+            nextButton = document.createElement('button');
+            nextButton.id = 'nextButton';
+            nextButton.textContent = 'Next Picture';
+            nextButton.style.display = 'none';
+            nextButton.className = 'button next-button';
+            
+            // Add next button to the guess form
+            const guessForm = document.querySelector('.guess-form');
+            if (guessForm) {
+                guessForm.appendChild(nextButton);
+            }
+            
+            // Add event listeners
+            if (guessButton) {
+                guessButton.addEventListener('click', makeGuess);
+            }
+            
+            if (nextButton) {
+                nextButton.addEventListener('click', nextRound);
+            }
+            
+            if (yearGuessInput) {
+                yearGuessInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        makeGuess();
+                    }
+                });
+            }
+            
+            // Add input validation for player name
+            const playerNameInput = document.getElementById('playerName');
+            if (playerNameInput) {
+                playerNameInput.addEventListener('input', function(e) {
+                    const name = e.target.value.trim();
+                    const joinButton = document.querySelector('#joinSection button');
+                    
+                    if (name.length < 2) {
+                        this.setCustomValidity('Name must be at least 2 characters long');
+                        joinButton.disabled = true;
+                    } else if (name.length > 20) {
+                        this.setCustomValidity('Name must be less than 20 characters');
+                        joinButton.disabled = true;
+                    } else {
+                        this.setCustomValidity('');
+                        joinButton.disabled = false;
+                    }
+                    
+                    this.reportValidity();
+                });
+            }
+        });
+
+        // Update UI function
+        function updateGameUI(gameState) {
+            if (!gameState) return;
+            
+            const gameSection = document.getElementById('gameSection');
+            gameSection.classList.remove('hidden');
+            
+            if (gameState.status === 'active' && gameState.images?.length > 0) {
+                const currentImage = gameState.images[gameState.currentRound];
+                
+                if (currentImage?.url) {
+                    imgElement.src = currentImage.url;
+                    imgElement.alt = 'Historical image';
+                    loadingStatus.textContent = 'What year was this photo taken?';
+                    imgElement.style.display = 'block';
+                    
+                    // Make sure guess form is visible
+                    const guessForm = document.querySelector('.guess-form');
+                    if (guessForm) {
+                        guessForm.style.display = 'flex';
+                        yearGuessInput.style.display = 'inline-block';
+                        guessButton.style.display = 'inline-block';
+                        nextButton.style.display = 'none';
+                    }
+                } else {
+                    loadingStatus.textContent = 'Error: No image available';
+                }
+                
+                updateScoreboard(gameState);
+            } else if (gameState.status === 'completed') {
+                loadingStatus.textContent = 'Game Over! Check the final scores.';
+                const guessForm = document.querySelector('.guess-form');
+                if (guessForm) {
+                    guessForm.style.display = 'none';
+                }
+            } else {
+                loadingStatus.textContent = 'Waiting for game to start...';
+                imgElement.style.display = 'none';
+            }
+        }
+
+        function updateScoreboard(gameState) {
+            if (gameState.scores && gameState.players) {
+                const scoresList = Object.entries(gameState.scores)
+                    .map(([playerId, score]) => ({
+                        id: playerId,
+                        name: gameState.players[playerId],
+                        score: score
+                    }))
+                    .sort((a, b) => b.score - a.score)
+                    .map(player => `
+                        <div class="score-entry" data-player-id="${player.id}">
+                            <div class="score-entry-content">
+                                <span class="player-name">${player.name}</span>
+                                <span class="player-score">${player.score}</span>
+                            </div>
+                            <button class="remove-button" aria-label="Remove player">×</button>
+                        </div>
+                    `)
+                    .join('');
+                
+                scoresListElement.innerHTML = `
+                    <div class="scoreboard">
+                        <h3>Scoreboard</h3>
+                        ${scoresList}
+                    </div>
+                `;
+                
+                // Add click handlers for remove buttons
+                document.querySelectorAll('.remove-button').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const entry = button.closest('.score-entry');
+                        if (confirm('Remove this player from the scoreboard?')) {
+                            removePlayer(entry.dataset.playerId);
+                        }
+                    });
+                });
+            }
+        }
+
+        async function removePlayer(playerId) {
+            try {
+                await fetch(`${game.baseUrl}/removePlayer`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ playerId })
+                });
+                // The next poll will update the scoreboard
+            } catch (error) {
+                console.error('Failed to remove player:', error);
+                alert('Failed to remove player');
+            }
+        }
+
+        async function nextRound() {
+            try {
+                // Reset UI elements for next round
+                yearGuessInput.value = '';
+                yearGuessInput.style.display = 'inline-block';
+                guessButton.style.display = 'inline-block';
+                nextButton.style.display = 'none';
+                
+                // Re-enable the guess form
+                const guessForm = document.querySelector('.guess-form');
+                if (guessForm) {
+                    guessForm.style.display = 'flex';
+                    guessForm.classList.remove('hidden');
+                }
+                
+                // Update game state
+                const status = await game.getGameStatus();
+                if (status.status === 'completed') {
+                    alert('Game Over! Check the final scores.');
+                    // Hide guess form for completed game
+                    if (guessForm) {
+                        guessForm.style.display = 'none';
+                    }
+                } else {
+                    updateGameUI(status);
+                }
+            } catch (error) {
+                console.error('Failed to load next round:', error);
+                alert('Failed to load next round: ' + error.message);
+            }
+        }
+
+        async function makeGuess() {
+            try {
+                const year = parseInt(yearGuessInput.value);
+                if (isNaN(year) || year < 1800 || year > 2024) {
+                    alert('Please enter a valid year between 1800 and 2024');
+                    return;
+                }
+                
+                if (!game.currentPlayerId) {
+                    alert('Error: Not properly joined to the game. Please refresh and try again.');
+                    return;
+                }
+                
+                const result = await game.makeGuess(year);
+                
+                // Hide input and guess button, show next button
+                const guessForm = document.querySelector('.guess-form');
+                if (guessForm) {
+                    yearGuessInput.style.display = 'none';
+                    guessButton.style.display = 'none';
+                    nextButton.style.display = 'inline-block';
+                }
+                
+                let message = `You scored ${result.points} points!`;
+                if (result.actualYear) {
+                    message += `\nThe actual year was ${result.actualYear}.`;
+                    if (result.difference) {
+                        message += `\nYou were off by ${Math.abs(result.difference)} years.`;
+                    }
+                }
+                
+                alert(message);
+                
+            } catch (error) {
+                alert('Failed to make guess: ' + error.message);
+            }
+        }
+
+        // Update the polling interval to be more frequent initially
+        function startGamePolling() {
+            // Poll more frequently at first
+            const initialPolls = setInterval(async () => {
+                try {
+                    const status = await game.getGameStatus();
+                    console.log('Polling status:', status);
+                    updateGameUI(status);
+                    
+                    if (status?.status === 'active') {
+                        clearInterval(initialPolls);
+                        startRegularPolling();
+                    }
+                } catch (error) {
+                    console.error('Error polling game status:', error);
+                }
+            }, 500); // Poll every 500ms initially
+            
+            // After 5 seconds, clear the initial polling if it hasn't been cleared
+            setTimeout(() => {
+                clearInterval(initialPolls);
+                startRegularPolling();
+            }, 5000);
+        }
+
+        function startRegularPolling() {
+            setInterval(async () => {
+                try {
+                    const status = await game.getGameStatus();
+                    updateGameUI(status);
+                } catch (error) {
+                    console.error('Error polling game status:', error);
+                }
+            }, 2000); // Regular polling every 2 seconds
+        }
+
+        // Add this function to your JavaScript
+        async function resetGame() {
+            try {
+                const response = await fetch(`${game.baseUrl}/reset?session=${game.sessionId}`);
+                if (!response.ok) {
+                    throw new Error('Failed to reset game');
+                }
+                location.reload(); // Reload the page after reset
+            } catch (error) {
+                console.error('Error resetting game:', error);
+                alert('Failed to reset game: ' + error.message);
+            }
+        }
+
+        async function joinGame() {
+            const nameInput = document.getElementById('playerName');
+            const playerName = nameInput.value.trim();
+            
+            if (!playerName) {
+                alert('Please enter a name');
+                return;
+            }
+            
+            try {
+                // Check current game state for duplicate names
+                const status = await game.getGameStatus();
+                console.log('Initial game status:', status);
+                
+                if (status && status.players) {
+                    const existingPlayer = Object.entries(status.players)
+                        .find(([_, name]) => name.toLowerCase() === playerName.toLowerCase());
+                    
+                    if (existingPlayer) {
+                        alert(`The name "${playerName}" is already taken. Please choose a different name.`);
+                        return;
+                    }
+                }
+                
+                // Join game with player name
+                const gameState = await game.joinGame(playerName);
+                console.log('Joined game with state:', gameState);
+                
+                // Hide join section and show game
+                document.getElementById('joinSection').style.display = 'none';
+                document.getElementById('gameSection').classList.remove('hidden');
+                startGamePolling();
+                
+            } catch (error) {
+                console.error('Join game error:', error);
+                alert('Failed to join game: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html> 
