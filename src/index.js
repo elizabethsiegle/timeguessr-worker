@@ -1,4 +1,3 @@
-import { describe } from 'vitest';
 import html from '../static/index.html';
 
 // Add this at the top of the file
@@ -421,63 +420,11 @@ export class GameSession {
   }
 
   async generateGameImages() {
-    const historicalImages = {
-      iwo_jima: {
-        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Raising_the_Flag_on_Iwo_Jima%2C_larger.jpeg/240px-Raising_the_Flag_on_Iwo_Jima%2C_larger.jpeg',
-        actualYear: 1945,
-        description: 'Marines raising the American flag on Mount Suribachi, Iwo Jima'
-      },
-      nato_signing: {
-        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Truman_signing_North_Atlantic_Treaty.jpg/1507px-Truman_signing_North_Atlantic_Treaty.jpg?20120314142514',
-        actualYear: 1949,
-        description: 'President Truman signing the North Atlantic Treaty'
-      },
-      wright_flight: {
-        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Katharine_Wright%27s_First_Time_Flying.jpg/240px-Katharine_Wright%27s_First_Time_Flying.jpg',
-        actualYear: 1909,
-        description: "Katharine Wright's first flight with Wilbur"
-      },
-      golden_gate: {
-        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Aerial_Photograph_of_the_Golden_Gate_Bridge_being_Constructed_in_San_Francisco%2C_California_-_NARA_-_7455640.jpg/240px-Aerial_Photograph_of_the_Golden_Gate_Bridge_being_Constructed_in_San_Francisco%2C_California_-_NARA_-_7455640.jpg',
-        actualYear: 1935,
-        description: 'Aerial view of Golden Gate Bridge under construction'
-      },
-      picasso: {
-        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Pablo_picasso_1.jpg/460px-Pablo_picasso_1.jpg',
-        actualYear: 1962,
-        description: "Picasso smiling"
-      },
-      battleofthesexes: {
-        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Billie_Jean_King_and_Bobby_Riggs_1973.jpg/196px-Billie_Jean_King_and_Bobby_Riggs_1973.jpg',
-        actualYear: 1973,
-        description: "Billie Jean King and Bobby Riggs"
-      },
-      stephcurry: {
-        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Stephen_Curry%2C_Olympic_Games_2024.jpg/193px-Stephen_Curry%2C_Olympic_Games_2024.jpg',
-        actualYear: 2024,
-        description: "Stephen Curry at the Olympic Games"
-      },
-      steveballmer: {
-        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Steve_Ballmer_-_MIX_2008.jpg/240px-Steve_Ballmer_-_MIX_2008.jpg',
-        actualYear: 2008,
-        description: "Steve Ballmer at MIX 2008"
-      },
-      stevejobs: {
-        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg/240px-Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg',
-        actualYear: 2010,
-        description: "Steve Jobs presenting iPhone 4 on stage at WWDC 2010"
-      },
-      phillygiants: {
-        url:'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/1902_Philadelphia_Giants.jpg/240px-1902_Philadelphia_Giants.jpg',
-        actualYear: 1902,
-        description: "Negro LeaguesPhiladelphia Giants team portrait"
-      },
-      baberuth_lougehrig: {
-        url: 'https://upload.wikimedia.org/wikipedia/commons/2/26/Babe_Ruth_%26_Lou_Gehrig_at_West_Point_1927.jpg?20220417041545',
-        actualYear: 1927,
-        description: "Babe Ruth and Lou Gehrig at West Point"
-      }
-    };
+    const historicalImages = await this.env.timeobjs.get('historicalimages.json', 'json') || [];
+    console.log('historicalImages', historicalImages);
+    if (!historicalImages || historicalImages.length === 0) {
+      throw new Error('No images found in KV store');
+    }
 
     // Convert dictionary to array and shuffle
     const imageArray = Object.values(historicalImages);

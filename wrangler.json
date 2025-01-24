@@ -7,7 +7,6 @@
   "observability": {
     "enabled": true
   },
-  "ai" : { "binding" : "AI" },
   "durable_objects": {
     "bindings" : [
       { 
@@ -20,6 +19,13 @@
     {
       "tag" : "v1",
       "new_classes" : ["GameSession"]
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "timeobjs",
+      "id": "d8ebef5002014fc0b90240c8b17e93db",
+      "preview_id": "20440a057962419484a59c9d4d9ccb58"
     }
   ]
 }
