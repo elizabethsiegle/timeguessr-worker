@@ -298,6 +298,32 @@
                 max-height: 300px;
             }
         }
+        .score-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .delete-player {
+        color: #e74c3c;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        font-size: 1.2em;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        opacity: 0.7;
+    }
+
+    .delete-player:hover {
+        background: rgba(231, 76, 60, 0.1);
+        transform: scale(1.1);
+        opacity: 1;
+    }
     </style>
 </head>
 <body>
@@ -527,43 +553,73 @@
         }
 
         function updateScoreboard(gameState) {
-            if (gameState.scores && gameState.players) {
-                const scoresList = Object.entries(gameState.scores)
-                    .map(([playerId, score]) => ({
-                        id: playerId,
-                        name: gameState.players[playerId],
-                        score: score
-                    }))
-                    .sort((a, b) => b.score - a.score)
-                    .map(player => `
-                        <div class="score-entry" data-player-id="${player.id}">
-                            <div class="score-entry-content">
-                                <span class="player-name">${player.name}</span>
-                                <span class="player-score">${player.score}</span>
-                            </div>
-                            <button class="remove-button" aria-label="Remove player">×</button>
-                        </div>
-                    `)
-                    .join('');
-                
-                scoresListElement.innerHTML = `
-                    <div class="scoreboard">
-                        <h3>Scoreboard</h3>
-                        ${scoresList}
+            const scoresList = document.getElementById('scoresList');
+            if (!scoresList) {
+                console.error('Scoreboard element not found');
+                return;
+            }
+            
+            // Clear existing content
+            scoresList.innerHTML = `
+                <div class="scoreboard">
+                    <h3>Leaderboard</h3>
+                    <ul></ul>
+                </div>
+            `;
+            
+            const scoreListUl = scoresList.querySelector('ul');
+            
+            // Convert scores object to array, filter out zero scores, and sort by score
+            const scores = Object.entries(gameState.scores)
+                .map(([id, score]) => ({
+                    id,
+                    name: gameState.players[id],
+                    score: score
+                }))
+                .filter(player => player.score > 0)  // Only show players with points
+                .sort((a, b) => b.score - a.score)   // Sort by highest score
+                .slice(0, 10);  // Only take top 10
+            
+            if (scores.length === 0) {
+                const li = document.createElement('li');
+                li.className = 'score-entry';
+                li.innerHTML = '<div class="no-scores">Make a guess to join the leaderboard!</div>';
+                scoreListUl.appendChild(li);
+                return;
+            }
+
+            scores.forEach(({id, name, score}, index) => {
+                const li = document.createElement('li');
+                li.className = 'score-entry';
+                li.innerHTML = `
+                    <div class="player-name">${index + 1}. ${name}</div>
+                    <div class="score-wrapper">
+                        <span class="player-score">${score} pts</span>
+                        <span class="delete-player" data-player-id="${id}">×</span>
                     </div>
                 `;
                 
-                // Add click handlers for remove buttons
-                document.querySelectorAll('.remove-button').forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const entry = button.closest('.score-entry');
-                        if (confirm('Remove this player from the scoreboard?')) {
-                            removePlayer(entry.dataset.playerId);
-                        }
-                    });
+                // Add click handler for delete button
+                const deleteBtn = li.querySelector('.delete-player');
+                deleteBtn.addEventListener('click', async () => {
+                    try {
+                        const response = await fetch('/delete-player', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ playerId: id })
+                        });
+                        
+                        if (!response.ok) throw new Error('Failed to delete player');
+                        
+                        const gameState = await response.json();
+                        updateScoreboard(gameState);
+                    } catch (error) {
+                        console.error('Error deleting player:', error);
+                    }
                 });
-            }
+                
+                scoreListUl.appendChild(li);
+            });
         }
 
         async function removePlayer(playerId) {

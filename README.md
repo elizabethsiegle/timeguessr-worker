@@ -1,6 +1,6 @@
 # TimeGuessr 🕰️
 
-A fun version of the game [TimeGuessr](https://timeguessr.com/) where players guess the year historical photos were taken. Built with Cloudflare Workers, Durable Objects and vanilla JavaScript.
+A fun version of the game [TimeGuessr](https://timeguessr.com/) where players guess the year historical photos were taken. Built with Cloudflare Workers, Durable Objects, KV to store the images (from Wikimedia) and their corresponding years, and vanilla JavaScript.
 
 ## 🎮 How to Play
 
@@ -22,8 +22,8 @@ A fun version of the game [TimeGuessr](https://timeguessr.com/) where players gu
 ## 🛠️ Technical Stack
 
 - Frontend: Vanilla JavaScript, HTML, CSS
-- Backend: Cloudflare Workers
-- Storage: Cloudflare Durable Objects
+- Backend: [Cloudflare Workers](https://workers.cloudflare.com/)
+- Storage: [Cloudflare Durable Objects](https://developers.cloudflare.com/durable-objects/), [Workers KV](https://developers.cloudflare.com/kv/)
 - Images: Historical photographs from Wikimedia Commons
 
 ## 🚀 Development
@@ -35,4 +35,4 @@ A fun version of the game [TimeGuessr](https://timeguessr.com/) where players gu
 
 ## 🤝 Contributing
 
-Feel free to fork this repository and submit a pull request with your improvements.
+Feel free to fork this repository and submit a PR with any improvements. You can add the images in [static/historicalImages.json](static/historicalImages.json) and then I will be notified by PRs to add upload them to Cloudflare Workers KV!
